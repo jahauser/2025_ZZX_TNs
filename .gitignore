@@ -1,0 +1,6 @@
+# data and notebooks
+data/
+notebooks/
+
+# OS-generated files
+.DS_Store
