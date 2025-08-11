@@ -1,6 +1,8 @@
-# data and notebooks
 data/
-notebooks/
+output/
+logs/
+
+notebooks/.ipynb_checkpoints/
 
 # OS-generated files
 .DS_Store
