@@ -67,14 +67,17 @@ function main(args)
     mkpath(outdir)
     
     _, _ = sample(2, 2, 0.1, 0.1, 0.1, 1; observables=obs, cutoff=1e-8, maxdim=200)
+
+    t1 = time()
     mean_data, var_data = sample(L, T, lambda, delta, q, samples; observables=obs, cutoff=1e-8, maxdim=200)
+    dt = time()-t1
 
     tagstr = tag(L=L, T=T, lambda=lambda, delta=delta, q=q)
     timestr = Dates.format(Dates.now(), "yyyymmdd_HHMMSS")
     randtag = string(rand(UInt32))
     fname  = joinpath(outdir, "sample_$(tagstr)_$(timestr)_$(randtag).jld2")
 
-    @save fname L T lambda delta q samples obs mean_data var_data
+    @save fname L T lambda delta q samples obs mean_data var_data dt
 end
 
 main(ARGS)
