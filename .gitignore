@@ -1,6 +1,7 @@
 data/
 output/
 logs/
+containers/
 
 notebooks/.ipynb_checkpoints/
 
