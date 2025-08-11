@@ -22,14 +22,28 @@ Ls       = union([2], 8:8:40)
 lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
 qs       = [0.1]
-samples  = 1
-repeats  = 1   # duplicate each set this many times
+samples  = Dict{Int,Int}(
+    2 => 1,
+    8 => 1000,
+    16 => 100,
+    24 => 100,
+    32 => 50,
+    40 => 40,
+)
+repeats  = Dict{Int,Int}(
+    2 => 1,
+    8 => 1,
+    16 => 10,
+    24 => 10,
+    32 => 20,
+    40 => 25,
+)
 append = false  # change to false to overwrite
 
 lines = String[]
 for L in Ls, λ in lambdas, δ in deltas, q in qs
-    for _ in 1:repeats
-        push!(lines, format_line(L, 2L+2, λ, δ, q, samples))
+    for _ in 1:repeats[L]
+        push!(lines, format_line(L, 2L+2, λ, δ, q, samples[L]))
     end
 end
 
