@@ -3,9 +3,7 @@ executable            = jobs/run.sh
 arguments             = $(params)
 
 # Send only what the job needs
-transfer_input_files  = jobs/run.jl, jobs/run.sh, \
-                        src/main.jl, src/observables.jl, src/states.jl, src/doubled_measurements.jl, src/circuits.jl, \
-                        Project.toml, Manifest.toml
+transfer_input_files  = jobs, src, Project.toml, Manifest.toml
 
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
