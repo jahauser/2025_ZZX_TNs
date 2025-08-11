@@ -18,19 +18,18 @@ end
 # -------------------------------
 # Define your sweeps here
 # -------------------------------
-Ls       = 8:4:12
-Ts       = [2L+2 for L in Ls]
+Ls       = union([2], 8:8:40)
 lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
 qs       = [0.1]
-samples  = 20
-repeats  = 2   # duplicate each set this many times
+samples  = 1
+repeats  = 1   # duplicate each set this many times
 append = false  # change to false to overwrite
 
 lines = String[]
-for L in Ls, T in Ts, λ in lambdas, δ in deltas, q in qs
+for L in Ls, λ in lambdas, δ in deltas, q in qs
     for _ in 1:repeats
-        push!(lines, format_line(L, T, λ, δ, q, samples))
+        push!(lines, format_line(L, 2L+2, λ, δ, q, samples))
     end
 end
 

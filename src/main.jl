@@ -30,8 +30,23 @@ end
 
 # TODO: could someday adjust to take out exponential so p = 0.5 works better
 # assumes M satisfies M^2 = 1
+# function decoherence_layer(sites::Vector{Index{Int}}, M::AbstractMatrix, p::Float64, positions::AbstractVector, L::Int)
+#     K = atanh(p/(1-p))
+#     M_width = Int(log2(size(M)[1]))
+
+#     gates = ITensor[]
+#     for pos in positions
+#         # println([mod1(2*(pos+i)-1,2L) for i in 0:M_width-1])
+#         # println([mod1(2*(pos+i),2L) for i in 0:M_width-1])
+#         legs1 = [sites[mod1(2*(pos+i)-1,2L)] for i in 0:M_width-1]
+#         legs2 = [sites[mod1(2*(pos+i),2L)] for i in 0:M_width-1]
+#         h = op(M, legs1...)*op(M, legs2...)
+#         push!(gates, exp(K * h))
+#     end
+#     return gates
+# end
+
 function decoherence_layer(sites::Vector{Index{Int}}, M::AbstractMatrix, p::Float64, positions::AbstractVector, L::Int)
-    K = atanh(p/(1-p))
     M_width = Int(log2(size(M)[1]))
 
     gates = ITensor[]
@@ -40,8 +55,8 @@ function decoherence_layer(sites::Vector{Index{Int}}, M::AbstractMatrix, p::Floa
         # println([mod1(2*(pos+i),2L) for i in 0:M_width-1])
         legs1 = [sites[mod1(2*(pos+i)-1,2L)] for i in 0:M_width-1]
         legs2 = [sites[mod1(2*(pos+i),2L)] for i in 0:M_width-1]
-        h = op(M, legs1...)*op(M, legs2...)
-        push!(gates, exp(K * h))
+        g = p*op(I, legs1...)*op(I, legs2...) + (1-p)*op(M, legs1...)*op(M, legs2...)
+        push!(gates, g)
     end
     return gates
 end

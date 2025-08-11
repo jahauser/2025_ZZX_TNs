@@ -66,7 +66,7 @@ function main(args)
     outdir = joinpath(ROOT, "output")
     mkpath(outdir)
     
-    _, _ = sample(4, 2, 0.1, 0.1, 0.1, 1; observables=obs, cutoff=1e-8, maxdim=200)
+    _, _ = sample(2, 2, 0.1, 0.1, 0.1, 1; observables=obs, cutoff=1e-8, maxdim=200)
     mean_data, var_data = sample(L, T, lambda, delta, q, samples; observables=obs, cutoff=1e-8, maxdim=200)
 
     tagstr = tag(L=L, T=T, lambda=lambda, delta=delta, q=q)
