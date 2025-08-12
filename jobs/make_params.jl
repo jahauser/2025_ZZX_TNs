@@ -21,7 +21,7 @@ end
 Ls       = union([2], 8:8:40)
 lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
-qs       = [0.1]
+qs       = [0.0]
 samples  = Dict{Int,Int}(
     2 => 1,
     8 => 1000,
