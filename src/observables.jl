@@ -20,7 +20,7 @@ function ZZ_corrs(ρ::MPS)
             Z_j = M_bra(sites[2j-1:2j], PauliZ, 1)
             Z_RS = Z_j[1]*Z_j[2]*ρ[2j-1]*ρ[2j] * right_stack
             
-            output_matrix[i,j] = (reduce(*, [LS_Z, reduced_ρs[i+1:j-1]..., Z_RS])[])^2
+            output_matrix[i,j] = (reduce(*, [LS_Z, reduced_ρs[i+1:j-1]..., Z_RS])[])^2 # squared because kappa ea!?
             output_matrix[j,i] = output_matrix[i,j]
 
             right_stack = reduced_ρs[j] * right_stack
@@ -98,4 +98,98 @@ function pure_κEA(ψ::MPS; ref=false)
     L = length(ψ) - ref
     corr = correlation_matrix(ψ, "Z", "Z")
     return sum(corr[1:L,1:L] .^ 2) / L
+end
+
+function boundary_ZZ_corrs(ρ::MPS)
+    N = length(ρ)÷2
+    sites = siteinds(ρ)
+    # println(inner(MPS(sites, _ -> "+"), ρ))
+    # ρ /= inner(MPS(sites, _ -> "+"), ρ)
+    output_matrix = Matrix{ComplexF64}(I, N, N)
+
+    denom = inner(MPS(sites, _ -> "+"), ρ)
+    # println(denom)
+
+    reduced_ρs = Vector{ITensor}()
+    for i in 1:N
+        plus_i = MPS(sites[2i-1:2i], _ -> "+")
+        push!(reduced_ρs, plus_i[1]*plus_i[2]*ρ[2i-1]*ρ[2i])
+    end
+
+    left_stack = ITensor(1)
+    for i in 1:N-1
+        plus_i = MPS(sites[2i-1:2i], _ -> "+")
+        Z_i = apply(op(PauliZ, sites[2i-1]), plus_i)
+        # println(expect(Z_i, "X"))
+        LS_Z = left_stack * Z_i[1]*Z_i[2]*ρ[2i-1]*ρ[2i]
+
+        right_stack = ITensor(1)
+        for j in N:-1:i+1
+            plus_j = MPS(sites[2j-1:2j], _ -> "+")
+            Z_j = apply(op(PauliZ, sites[2j-1]), plus_j)
+            # println(expect(Z_j, "X"))
+            Z_RS = Z_j[1]*Z_j[2]*ρ[2j-1]*ρ[2j] * right_stack
+            
+            # println( (reduce(*, [LS_Z, reduced_ρs[i+1:j-1]..., Z_RS])[])^2)
+            output_matrix[i,j] = (reduce(*, [LS_Z, reduced_ρs[i+1:j-1]..., Z_RS])[])/denom
+            output_matrix[j,i] = output_matrix[i,j]
+
+            right_stack = reduced_ρs[j] * right_stack
+        end
+
+        left_stack = left_stack * reduced_ρs[i]
+    end
+
+    return output_matrix
+end
+
+function boundary_ZZZZ_corrs(ρ::MPS)
+    N = length(ρ)÷2
+    sites = siteinds(ρ)
+    # ρ /= inner(MPS(sites, _ -> "+"), ρ)
+    output_matrix = Matrix{ComplexF64}(I, N, N)
+    denom = inner(MPS(sites, _ -> "+"), ρ)
+
+    reduced_ρs = Vector{ITensor}()
+    for i in 1:N
+        plus_i = MPS(sites[2i-1:2i], _ -> "+")
+        push!(reduced_ρs, plus_i[1]*plus_i[2]*ρ[2i-1]*ρ[2i])
+    end
+
+    left_stack = ITensor(1)
+    for i in 1:N-1
+        plus_i = MPS(sites[2i-1:2i], _ -> "+")
+        ZZ_i = apply(op(kron(PauliZ,PauliZ), sites[2i-1:2i]), plus_i)
+        LS_Z = left_stack * ZZ_i[1]*ZZ_i[2]*ρ[2i-1]*ρ[2i]
+
+        right_stack = ITensor(1)
+        for j in N:-1:i+1
+            plus_j = MPS(sites[2j-1:2j], _ -> "+")
+            ZZ_j = apply(op(kron(PauliZ,PauliZ), sites[2j-1:2j]), plus_j)
+            Z_RS = ZZ_j[1]*ZZ_j[2]*ρ[2j-1]*ρ[2j] * right_stack
+            
+            output_matrix[i,j] = (reduce(*, [LS_Z, reduced_ρs[i+1:j-1]..., Z_RS])[])/denom
+            output_matrix[j,i] = output_matrix[i,j]
+
+            right_stack = reduced_ρs[j] * right_stack
+        end
+
+        left_stack = left_stack * reduced_ρs[i]
+    end
+
+    return output_matrix
+end
+
+function boundary_ZZ_susceptibility(ρ::MPS; ref=false)
+    L = length(ρ)÷2 - ref
+
+    corrs = boundary_ZZ_corrs(ρ)
+    return sum(corrs[1:L,1:L])/L
+end
+
+function boundary_ZZZZ_susceptibility(ρ::MPS; ref=false)
+    L = length(ρ)÷2 - ref
+
+    corrs = boundary_ZZZZ_corrs(ρ)
+    return sum(corrs[1:L,1:L])/L
 end

@@ -19,9 +19,9 @@ end
 # Define your sweeps here
 # -------------------------------
 Ls       = union(8:8:40)
-lambdas  = 0.0:0.1:1.0
+lambdas  = [0.0, 1.0]
 deltas   = [0.7]
-qs       = [0.05]
+qs       = 0.0:0.05:0.5
 samples  = Dict{Int,Int}(
     2 => 1,
     8 => 1000,
