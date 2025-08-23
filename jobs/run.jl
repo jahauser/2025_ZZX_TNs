@@ -36,18 +36,25 @@ function build_parser()
             help = "Parameter q"
             arg_type = Float64
             required = true
+        "--theta"
+            help = "Parameter theta"
+            arg_type = Float64
+            required = true
         "--samples"
             help = "Number of samples (averaging inside sample())"
             arg_type = Int
             default = 1
+        "--pure"
+            arg_type = Bool
+            defaul = false
     end
     return s
 end
 
 # Filename-safe run tag
-function tag(; L, T, lambda, delta, q)
+function tag(; L, T, lambda, delta, q, theta, pure)
     f(x) = replace(@sprintf("%.3f", x), "." => "p")
-    return "L$(L)_T$(T)_lambda$(f(lambda))_delta$(f(delta))_q$(f(q))"
+    return "L$(L)_T$(T)_lambda$(f(lambda))_delta$(f(delta))_q$(f(q))_theta$(f(theta))_pure$pure"
 end
 
 function main(args)
@@ -57,10 +64,16 @@ function main(args)
     lambda = opts["lambda"]
     delta  = opts["delta"]
     q      = opts["q"]
+    theta = opts["theta"]
     samples = opts["samples"]
+    pure = opts["pure"]
 
     # Hardcoded observables
-    obs = [:Ic, :SR, :κEA, :κ2, :maxlinkdim]
+    if pure
+        obs = [:pure_SR, :pure_κEA]
+    else
+        obs = [:Ic, :SR, :κEA, :κ2, :maxlinkdim]
+    end
 
     # Hardcoded output dir for easy local testing
     outdir = joinpath(ROOT, "output")
@@ -69,10 +82,14 @@ function main(args)
     _, _ = sample(2, 2, 0.1, 0.1, 0.1, 0.1, 0.1, 1; observables=obs, cutoff=1e-8, maxdim=200)
 
     t1 = time()
-    mean_data, var_data = sample(L, T, lambda, delta, q, 0.0, 0.0, samples; observables=obs, cutoff=1e-8, maxdim=200)
+    if pure
+        mean_data, var_data = pure_sample(L, T, lambda, delta, theta, theta, samples; ref=true, final_perfect=true, observables=obs, cutoff=1e-8, maxdim=200)
+    else
+        mean_data, var_data = sample(L, T, lambda, delta, q, theta, theta, samples; ref=true, final_perfect=true, observables=obs, cutoff=1e-8, maxdim=200)
+    end
     dt = time()-t1
 
-    tagstr = tag(L=L, T=T, lambda=lambda, delta=delta, q=q)
+    tagstr = tag(L=L, T=T, lambda=lambda, delta=delta, q=q, theta=theta, pure=pure)
     timestr = Dates.format(Dates.now(), "yyyymmdd_HHMMSS")
     randtag = string(rand(UInt32))
     fname  = joinpath(outdir, "sample_$(tagstr)_$(timestr)_$(randtag).jld2")
