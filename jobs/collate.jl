@@ -11,8 +11,8 @@ if isempty(files)
 end
 
 # results[(L,T,lambda,delta,q)] = (sum_E, sum_E2, total_samples, obs, total_time)
-results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{Float64}},
-                                    Dict{Symbol,Vector{Float64}},
+results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
+                                    Dict{Symbol,Vector{ComplexF64}},
                                     Int, Vector{Symbol}, Float64}}()
 
 for f in files
@@ -23,8 +23,8 @@ for f in files
     # sum_E   += samples * E[x]
     # sum_E2  += samples * E[x^2]
     if !haskey(results, key)
-        sum_E  = Dict{Symbol,Vector{Float64}}()
-        sum_E2 = Dict{Symbol,Vector{Float64}}()
+        sum_E  = Dict{Symbol,Vector{ComplexF64}}()
+        sum_E2 = Dict{Symbol,Vector{ComplexF64}}()
         for s in obs
             sum_E[s]  = samples .* copy(mean_data[s])
             sum_E2[s] = samples .* copy(var_data[s])
