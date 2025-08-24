@@ -2,7 +2,7 @@
 using JLD2
 using Glob
 
-outdir = joinpath(@__DIR__,  "../data_archive/unlabeled_unitary/")
+outdir = joinpath(@__DIR__,  "../data_archive/data_gaps_and_some_coherent/")
 files = glob("*.jld2", outdir)
 
 if isempty(files)
@@ -10,28 +10,55 @@ if isempty(files)
     exit(0)
 end
 
-version = :unlabeled_unitary
+version = :full
 
 # results[(L,T,lambda,delta,q)] = (sum_E, sum_E2, total_samples, obs, total_time)
-results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
+# results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
+                                    # Dict{Symbol,Vector{ComplexF64}},
+                                    # Int, Vector{Symbol}, Float64}}()
+
+if version == :no_unitary
+    results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
                                     Dict{Symbol,Vector{ComplexF64}},
                                     Int, Vector{Symbol}, Float64}}()
+elseif version in [:unlabeled_unitary, :full]
+    results = Dict{NTuple{7,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
+                                    Dict{Symbol,Vector{ComplexF64}},
+                                    Int, Vector{Symbol}, Float64}}()
+end
 
 for f in files
     if version == :no_unitary
         @load f L T lambda delta q samples obs mean_data var_data dt
         key = (L, T, lambda, delta, q)
     elseif version == :unlabeled_unitary
-        m = match(r"theta0p(\d+)_pure( true|false)", f)
+        if occursin("theta", f)
+            m = match(r"theta0p(\d+)_pure(true|false)", f)
 
-        theta = parse(Float64, replace(m.captures[1], "p" => ".") |> x -> "0." * x)
-        pure  = m.captures[2] == "true"
-        
-        @load f L T lambda delta q samples obs mean_data var_data dt
-        key = (L, T, lambda, delta, q, theta, pure)
+            theta = parse(Float64, replace(m.captures[1], "p" => ".") |> x -> "0." * x)
+            pure  = m.captures[2] == "true"
+            
+            @load f L T lambda delta q samples obs mean_data var_data dt
+            key = (L, T, lambda, delta, q, theta, pure)
+        end
     elseif version == :full
-        @load f L T lambda delta q theta pure samples obs mean_data var_data dt
-        key = (L, T, lambda, delta, q, theta, pure)
+        if occursin("theta", f)
+            try 
+                @load f L T lambda delta q theta pure samples obs mean_data var_data dt
+                key = (L, T, lambda, delta, q, theta, pure)
+            catch KeyError
+                @load f L T lambda delta q samples obs mean_data var_data dt
+                if samples == 1
+                    continue
+                else
+                    println(samples)
+                    continue
+                end
+            end
+        else
+            println(f)
+            continue
+        end
     end
 
 

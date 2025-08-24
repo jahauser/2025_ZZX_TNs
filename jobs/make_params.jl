@@ -24,8 +24,8 @@ end
 Ls = 8:8:24
 lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
-thetas = [0.2]
-qs       = [0.0, 0.1, 0.2]
+thetas = [0.1, 0.2]
+qs       = [0.0, 0.05, 0.1]
 
 samples  = Dict{Int,Int}(
     2 => 1,
