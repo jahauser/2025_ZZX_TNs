@@ -17,9 +17,9 @@ log                   = logs/$(Cluster).log
 +JobDurationCategory = "Medium"
 
 # Resources (tune)
-request_cpus          = 8
-request_memory        = 8 GB
-request_disk          = 5GB
+request_cpus          = 4
+request_memory        = 4 GB
+request_disk          = 1GB
 
 # Container (pick ONE)
 container_image       = osdf:///ospool/ap40/data/jacob.hauser/julia-itensors-1.10-20250810.sif

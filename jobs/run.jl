@@ -10,6 +10,7 @@ const ROOT = normpath(joinpath(@__DIR__, ".."))
 include(joinpath(ROOT, "src", "main.jl"))
 include(joinpath(ROOT, "src", "observables.jl"))
 include(joinpath(ROOT, "src", "states.jl"))
+include(joinpath(ROOT, "src", "singled_measurements.jl"))
 include(joinpath(ROOT, "src", "doubled_measurements.jl"))
 include(joinpath(ROOT, "src", "circuits.jl"))
 
@@ -46,7 +47,7 @@ function build_parser()
             default = 1
         "--pure"
             arg_type = Bool
-            defaul = false
+            default = false
     end
     return s
 end
@@ -94,7 +95,7 @@ function main(args)
     randtag = string(rand(UInt32))
     fname  = joinpath(outdir, "sample_$(tagstr)_$(timestr)_$(randtag).jld2")
 
-    @save fname L T lambda delta q samples obs mean_data var_data dt
+    @save fname L T lambda delta q theta pure samples obs mean_data var_data dt
 end
 
 main(ARGS)

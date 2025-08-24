@@ -2,7 +2,7 @@
 using JLD2
 using Glob
 
-outdir = joinpath(@__DIR__, "..", "output")
+outdir = joinpath(@__DIR__,  "../data_archive/unlabeled_unitary/")
 files = glob("*.jld2", outdir)
 
 if isempty(files)
@@ -10,14 +10,30 @@ if isempty(files)
     exit(0)
 end
 
+version = :unlabeled_unitary
+
 # results[(L,T,lambda,delta,q)] = (sum_E, sum_E2, total_samples, obs, total_time)
 results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
                                     Dict{Symbol,Vector{ComplexF64}},
                                     Int, Vector{Symbol}, Float64}}()
 
 for f in files
-    @load f L T lambda delta q samples obs mean_data var_data dt
-    key = (L, T, lambda, delta, q)
+    if version == :no_unitary
+        @load f L T lambda delta q samples obs mean_data var_data dt
+        key = (L, T, lambda, delta, q)
+    elseif version == :unlabeled_unitary
+        m = match(r"theta0p(\d+)_pure( true|false)", f)
+
+        theta = parse(Float64, replace(m.captures[1], "p" => ".") |> x -> "0." * x)
+        pure  = m.captures[2] == "true"
+        
+        @load f L T lambda delta q samples obs mean_data var_data dt
+        key = (L, T, lambda, delta, q, theta, pure)
+    elseif version == :full
+        @load f L T lambda delta q theta pure samples obs mean_data var_data dt
+        key = (L, T, lambda, delta, q, theta, pure)
+    end
+
 
     # Convert per-file averages to weighted sums
     # sum_E   += samples * E[x]
