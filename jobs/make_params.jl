@@ -18,35 +18,55 @@ end
 # -------------------------------
 # Define your sweeps here
 # -------------------------------
-pure = true
+# pure = true
 
-Ls       = union(8:8:40)
+# Ls       = union(8:8:40)
+Ls = 8:8:24
 lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
 thetas = [0.2]
-qs       = [0.0]
+qs       = [0.0, 0.1, 0.2]
+
 samples  = Dict{Int,Int}(
     2 => 1,
-    8 => 1000,
-    16 => 100,
-    24 => 100,
-    32 => 50,
-    40 => 40,
+    8 => 500,
+    16 => 50,
+    24 => 50,
+    # 32 => 50,
+    # 40 => 40,
 )
 repeats  = Dict{Int,Int}(
     2 => 1,
-    8 => 1,
-    16 => 10,
-    24 => 10,
-    32 => 20,
-    40 => 25,
+    8 => 2,
+    16 => 20,
+    24 => 20,
+    # 32 => 20,
+    # 40 => 25,
 )
+
+# samples  = Dict{Int,Int}(
+#     2 => 1,
+#     8 => 1000,
+#     16 => 100,
+#     24 => 100,
+#     32 => 50,
+#     40 => 40,
+# )
+# repeats  = Dict{Int,Int}(
+#     2 => 1,
+#     8 => 1,
+#     16 => 10,
+#     24 => 10,
+#     32 => 20,
+#     40 => 25,
+# )
 append = false  # change to false to overwrite
 
 lines = String[]
 for L in Ls, λ in lambdas, δ in deltas, q in qs, theta in thetas
-    for _ in 1:1
-        push!(lines, format_line(L, 2L+2, λ, δ, q, theta, 1, pure))
+    pure = q==0.0 ? true : false
+    for _ in 1:repeats[L]
+        push!(lines, format_line(L, 2L+2, λ, δ, q, theta, samples[L], pure))
     end
 end
 
