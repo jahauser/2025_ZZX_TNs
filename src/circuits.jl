@@ -106,7 +106,7 @@ function pure_circuit(L::Int, T::Int, λ::Float64, δ::Float64, θx::Float64, θ
     λx = δ*λ
 
     Xc = singled_coherent_layer(sites, PauliX, θx, 1:L, L)
-    ZZc = singled_coherent_layer(sites, kron(PauliZ, PauliZ),, θzz, 1:L-1, L)
+    ZZc = singled_coherent_layer(sites, kron(PauliZ, PauliZ), θzz, 1:L-1, L)
 
     for t in 1:T
         ψ, _, _ = singled_measure(ψ, kron(PauliZ,PauliZ), λzz, 1:L-1; ref=ref)
