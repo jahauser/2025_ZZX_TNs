@@ -21,11 +21,11 @@ end
 # pure = false
 
 # Ls       = union(8:8:40)
-Ls = 8:8:40
-lambdas  = union(0.0:0.1:0.4, 0.41:0.01:0.59, 0.6:0.1:1.0)
+Ls = 32:8:40
+lambdas  = 0.0:0.1:1.0
 deltas   = [0.7]
-thetas = [0.0]
-qs       = [0.0]
+thetas = [0.1, 0.2]
+qs       = [0.0, 0.05, 0.1, 0.15]
 
 samples  = Dict{Int,Int}(
     2 => 1,
