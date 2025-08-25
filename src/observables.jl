@@ -193,3 +193,22 @@ function boundary_ZZZZ_susceptibility(ρ::MPS; ref=false)
     corrs = boundary_ZZZZ_corrs(ρ)
     return sum(corrs[1:L,1:L])/L
 end
+
+function disorder_EA(ψ::MPS; ref=false)
+    L = length(ψ) - ref
+    κ = L
+    for i in 1:L-1
+        for j in i+1:L
+            κ += 2expectX(ψ, i, j)^2
+        end
+    end
+    return κ/L
+end
+
+function expectX(ψ::MPS, i::Int, j::Int)
+    ϕ = apply(op(PauliX, siteinds(ψ)[i]), ψ)
+    for site in i+1:j-1
+        ϕ = apply(op(PauliX, siteinds(ψ)[site]), ϕ)
+    end
+    return inner(ϕ, ψ)/norm(ψ)^2
+end

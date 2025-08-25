@@ -48,6 +48,9 @@ function build_parser()
         "--pure"
             arg_type = Bool
             default = false
+        "--PBC"
+            arg_type = Bool
+            default = false
     end
     return s
 end
@@ -68,10 +71,15 @@ function main(args)
     theta = opts["theta"]
     samples = opts["samples"]
     pure = opts["pure"]
+    PBC = opts["PBC"]
 
     # Hardcoded observables
     if pure
-        obs = [:pure_SR, :pure_κEA]
+        if PBC
+            obs = [:terminal_order, :terminal_disorder]
+        else
+            obs = [:pure_SR, :pure_κEA]
+        end
     else
         obs = [:Ic, :SR, :κEA, :κ2, :maxlinkdim]
     end
@@ -84,7 +92,7 @@ function main(args)
 
     t1 = time()
     if pure
-        mean_data, var_data = pure_sample(L, T, lambda, delta, theta, theta, samples; ref=true, final_perfect=true, observables=obs, cutoff=1e-8, maxdim=200)
+        mean_data, var_data = pure_sample(L, T, lambda, delta, theta, theta, samples; PBC=PBC, ref=true, final_perfect=true, observables=obs, cutoff=1e-8, maxdim=200)
     else
         mean_data, var_data = sample(L, T, lambda, delta, q, theta, theta, samples; ref=true, final_perfect=true, observables=obs, cutoff=1e-8, maxdim=200)
     end
@@ -93,7 +101,12 @@ function main(args)
     tagstr = tag(L=L, T=T, lambda=lambda, delta=delta, q=q, theta=theta, pure=pure)
     timestr = Dates.format(Dates.now(), "yyyymmdd_HHMMSS")
     randtag = string(rand(UInt32))
-    fname  = joinpath(outdir, "sample_$(tagstr)_$(timestr)_$(randtag).jld2")
+
+    if !PBC
+        fname  = joinpath(outdir, "sample_$(tagstr)_$(timestr)_$(randtag).jld2")
+    else
+        fname  = joinpath(outdir, "sample_$(tagstr)_PBC_$(timestr)_$(randtag).jld2")
+    end
 
     @save fname L T lambda delta q theta pure samples obs mean_data var_data dt
 end

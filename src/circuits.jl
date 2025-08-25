@@ -1,4 +1,4 @@
-function MPS_update_data(ρ::MPS, observables::Vector{Symbol}, data::Dict{Symbol,Vector{ComplexF64}}, t::Int; ref=false)
+function MPS_update_data(ρ::MPS, observables::Vector{Symbol}, data::Dict{Symbol,Vector{ComplexF64}}, t::Int; ref=false, max_t=0)
     if :Ic in observables
         data[:Ic][t] = Ic2(ρ)
     end
@@ -27,6 +27,15 @@ function MPS_update_data(ρ::MPS, observables::Vector{Symbol}, data::Dict{Symbol
     end
     if :pure_κEA in observables
         data[:pure_κEA][t] = pure_κEA(ρ; ref=ref)
+    end
+
+    if max_t != 0 && max_t - t < 4
+        if :terminal_order in observables
+            data[:terminal_order][t] = pure_κEA(ρ; ref=ref)
+        end
+        if :terminal_disorder in observables
+            data[:terminal_disorder][t] = disorder_EA(ρ; ref=ref)
+        end
     end
     return data
 end
@@ -95,21 +104,30 @@ function circuit(L::Int, T::Int, λ::Float64, δ::Float64, q::Float64, θx::Floa
     return ρ, data
 end
 
-function pure_circuit(L::Int, T::Int, λ::Float64, δ::Float64, θx::Float64, θzz::Float64; ref=true, final_perfect=false, observables=Symbol[], cutoff=1E-8, maxdim=200)
+function pure_circuit(L::Int, T::Int, λ::Float64, δ::Float64, θx::Float64, θzz::Float64; ref=true, PBC=false, final_perfect=false, observables=Symbol[], cutoff=1E-8, maxdim=200)
     ψ, sites = pure_ghz(L; ref=ref)
 
     data = Dict([s => zeros(ComplexF64, 2T+2) for s in observables])
-    data = MPS_update_data(ψ, observables, data, 1; ref=ref)
-    data = MPS_update_data(ψ, observables, data, 2; ref=ref)
+    data = MPS_update_data(ψ, observables, data, 1; ref=ref, max_t=2T+2)
+    data = MPS_update_data(ψ, observables, data, 2; ref=ref, max_t=2T+2)
 
     λzz = δ*(1-λ)
     λx = δ*λ
 
     Xc = singled_coherent_layer(sites, PauliX, θx, 1:L, L)
-    ZZc = singled_coherent_layer(sites, kron(PauliZ, PauliZ), θzz, 1:L-1, L)
+
+    if !PBC
+        ZZc = singled_coherent_layer(sites, kron(PauliZ, PauliZ), θzz, 1:L-1, L)
+    else
+        ZZc = singled_coherent_layer(sites, kron(PauliZ, PauliZ), θzz, 1:L, L)
+    end
 
     for t in 1:T
-        ψ, _, _ = singled_measure(ψ, kron(PauliZ,PauliZ), λzz, 1:L-1; ref=ref)
+        if !PBC
+            ψ, _, _ = singled_measure(ψ, kron(PauliZ,PauliZ), λzz, 1:L-1; ref=ref)
+        else
+            ψ, _, _ = singled_measure(ψ, kron(PauliZ,PauliZ), λzz, 1:L; ref=ref)
+        end
         ψ /= norm(ψ)
         truncate!(ψ; cutoff=cutoff, maxdim=maxdim)
 
@@ -119,7 +137,7 @@ function pure_circuit(L::Int, T::Int, λ::Float64, δ::Float64, θx::Float64, θ
             truncate!(ψ; cutoff=cutoff, maxdim=maxdim)
         end
 
-        data = MPS_update_data(ψ, observables, data, 2t+1; ref=ref)
+        data = MPS_update_data(ψ, observables, data, 2t+1; ref=ref, max_t=2T+2)
 
         ψ, _, _ = singled_measure(ψ, PauliX, λx, 1:L; ref=ref)
         ψ /= norm(ψ)
@@ -138,7 +156,7 @@ function pure_circuit(L::Int, T::Int, λ::Float64, δ::Float64, θx::Float64, θ
             truncate!(ψ; cutoff=cutoff, maxdim=maxdim) 
         end
 
-        data = MPS_update_data(ψ, observables, data, 2t+2; ref=ref)
+        data = MPS_update_data(ψ, observables, data, 2t+2; ref=ref, max_t=2T+2)
     end
 
     return ψ, data
@@ -161,11 +179,11 @@ function sample(L::Int, T::Int, Δ::Float64, δ::Float64, q::Float64, θx::Float
     return mean_data, var_data
 end
 
-function pure_sample(L::Int, T::Int, Δ::Float64, δ::Float64, θx::Float64, θzz::Float64, samples::Int; ref=true, final_perfect=false, observables=Symbol[], cutoff=1E-8, maxdim=200)
+function pure_sample(L::Int, T::Int, Δ::Float64, δ::Float64, θx::Float64, θzz::Float64, samples::Int; ref=true, PBC=false, final_perfect=false, observables=Symbol[], cutoff=1E-8, maxdim=200)
     mean_data = Dict([s => zeros(ComplexF64, 2T+2) for s in observables])
     var_data = Dict([s => zeros(ComplexF64, 2T+2) for s in observables])
     for _ in 1:samples
-        _, sample_data = pure_circuit(L, T, Δ, δ, θx, θzz; ref=ref, final_perfect=final_perfect, observables=observables, cutoff=cutoff, maxdim=maxdim)
+        _, sample_data = pure_circuit(L, T, Δ, δ, θx, θzz; ref=ref, PBC=PBC, final_perfect=final_perfect, observables=observables, cutoff=cutoff, maxdim=maxdim)
         for observable in observables
             mean_data[observable] += sample_data[observable]
             var_data[observable] += sample_data[observable].^2
