@@ -10,7 +10,7 @@ if isempty(files)
     exit(0)
 end
 
-version = :full
+version = :PBC
 
 # results[(L,T,lambda,delta,q)] = (sum_E, sum_E2, total_samples, obs, total_time)
 # results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
