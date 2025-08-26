@@ -76,7 +76,7 @@ function main(args)
     # Hardcoded observables
     if pure
         if PBC
-            obs = [:terminal_order, :terminal_disorder]
+            obs = [:terminal_order, :terminal_disorder, :pure_SR]
         else
             obs = [:pure_SR, :pure_κEA]
         end

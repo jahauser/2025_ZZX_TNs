@@ -1,8 +1,8 @@
 const PARAMS_FILE = joinpath(@__DIR__, "params.txt")
 
 "Format one CLI line for run.jl."
-format_line(L, T, lambda, delta, q, theta, samples, pure) =
-    "--L $L --T $T --lambda $lambda --delta $delta --q $q --theta $theta --samples $samples --pure $pure"
+format_line(L, T, lambda, delta, q, theta, samples, pure, PBC) =
+    "--L $L --T $T --lambda $lambda --delta $delta --q $q --theta $theta --samples $samples --pure $pure --PBC $PBC"
 
 "Write or append parameter lines to jobs/params.txt."
 function write_params(lines::Vector{String}; append::Bool=false)
@@ -21,11 +21,12 @@ end
 # pure = false
 
 # Ls       = union(8:8:40)
-Ls = 32:8:40
-lambdas  = 0.0:0.1:1.0
+PBC = true
+Ls = 8:8:40
+lambdas  = union(0.0:0.1:0.4, 0.41:0.01:0.59, 0.6:0.1:1.0)
 deltas   = [0.7]
-thetas = [0.1, 0.2]
-qs       = [0.0, 0.05, 0.1, 0.15]
+thetas = [0.0]
+qs       = [0.0]
 
 samples  = Dict{Int,Int}(
     2 => 1,
@@ -66,7 +67,7 @@ lines = String[]
 for L in Ls, λ in lambdas, δ in deltas, q in qs, theta in thetas
     pure = q==0.0 ? true : false
     for _ in 1:repeats[L]
-        push!(lines, format_line(L, 2L+2, λ, δ, q, theta, samples[L], pure))
+        push!(lines, format_line(L, 2L+2, λ, δ, q, theta, samples[L], pure, PBC))
     end
 end
 

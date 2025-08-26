@@ -21,7 +21,7 @@ if version == :no_unitary
     results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
                                     Dict{Symbol,Vector{ComplexF64}},
                                     Int, Vector{Symbol}, Float64}}()
-elseif version in [:unlabeled_unitary, :full]
+elseif version in [:unlabeled_unitary, :full, :PBC]
     results = Dict{NTuple{7,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
                                     Dict{Symbol,Vector{ComplexF64}},
                                     Int, Vector{Symbol}, Float64}}()
@@ -59,7 +59,15 @@ for f in files
             println(f)
             continue
         end
+    elseif version == :PBC
+        if occursin("PBC", f)
+            @load f L T lambda delta q theta pure samples obs mean_data var_data dt
+            key = (L, T, lambda, delta, q, theta, pure)
+        else
+            continue
+        end
     end
+
 
 
     # Convert per-file averages to weighted sums
