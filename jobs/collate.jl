@@ -10,7 +10,7 @@ if isempty(files)
     exit(0)
 end
 
-version = :PBC
+version = :full
 
 # results[(L,T,lambda,delta,q)] = (sum_E, sum_E2, total_samples, obs, total_time)
 # results = Dict{NTuple{5,Any}, Tuple{Dict{Symbol,Vector{ComplexF64}},
@@ -42,7 +42,7 @@ for f in files
             key = (L, T, lambda, delta, q, theta, pure)
         end
     elseif version == :full
-        if occursin("theta", f)
+        if occursin("theta", f) && !occursin("PBC", f)
             try 
                 @load f L T lambda delta q theta pure samples obs mean_data var_data dt
                 key = (L, T, lambda, delta, q, theta, pure)

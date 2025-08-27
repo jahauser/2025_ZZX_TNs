@@ -26,7 +26,7 @@ Ls = 8:8:40
 lambdas  = union(0.0:0.1:1.0)
 deltas   = [0.7]
 thetas = [0.2]
-qs       = [0.0]
+qs       = [0.01, 0.05]
 
 samples  = Dict{Int,Int}(
     2 => 1,
