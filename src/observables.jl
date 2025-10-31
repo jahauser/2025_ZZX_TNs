@@ -212,3 +212,28 @@ function expectX(ψ::MPS, i::Int, j::Int)
     end
     return inner(ϕ, ψ)/norm(ψ)^2
 end
+
+function binder_EA(ψ::MPS; ref=false)
+    L = length(ψ) - ref
+    κ2 = pure_κEA(ψ; ref=ref)
+
+    quads = [(i, j, k, l) for i in 1:L for j in i+1:L for k in j+1:L for l in k+1:L]
+    ZZZZs = correlator(ψ, ("Z", "Z", "Z", "Z"), quads)
+
+    κ4 = (3-2/L) + (12-16/L)*(κ2-1)/2 + factorial(4)/L^2 * sum([ZZZZs[(i,j,k,l)]^2 for (i,j,k,l) in quads])
+    
+    return 1 - κ4/(3*κ2^2)
+end
+
+
+function four_point_EA(ψ::MPS; ref=false)
+    L = length(ψ) - ref
+    κ2 = pure_κEA(ψ; ref=ref)
+
+    quads = [(i, j, k, l) for i in 1:L for j in i+1:L for k in j+1:L for l in k+1:L]
+    ZZZZs = correlator(ψ, ("Z", "Z", "Z", "Z"), quads)
+
+    κ4 = (3-2/L) + (12-16/L)*(κ2-1)/2 + factorial(4)/L^2 * sum([ZZZZs[(i,j,k,l)]^2 for (i,j,k,l) in quads])
+    
+    return κ4
+end

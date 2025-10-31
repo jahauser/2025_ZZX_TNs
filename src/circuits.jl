@@ -37,6 +37,14 @@ function MPS_update_data(ρ::MPS, observables::Vector{Symbol}, data::Dict{Symbol
             data[:terminal_disorder][t] = disorder_EA(ρ; ref=ref)
         end
     end
+
+    if :binder_EA in observables
+        data[:binder_EA][t] = binder_EA(ρ; ref=ref)
+    end
+
+    if :four_point_EA in observables
+        data[:four_point_EA][t] = four_point_EA(ρ; ref=ref)
+    end
     return data
 end
 
